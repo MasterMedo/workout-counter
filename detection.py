@@ -11,10 +11,18 @@ old_points = None
 points = None
 old_optical_flow = None
 optical_flow = None
+v = None
 
-h, w = cap.get(3), cap.get(4)
+n = 33
+
+
+height, width = cap.get(3), cap.get(4)
 grid = np.array(
-    [[[i * h / 10, j * w / 10]] for i in range(1, 10) for j in range(1, 10)],
+    [
+        [[i * height / n, j * width / n]]
+        for i in range(1, n + 1)
+        for j in range(1, n + 1)
+    ],
     dtype=np.float32,
 )
 
@@ -36,21 +44,43 @@ for i in count():
         gray,
         grid,
         None,
-        winSize=(10, 10),
-        maxLevel=2,
+        winSize=(n, n),
+        maxLevel=4,
         criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1.5),
     )
 
     optical_flow_old = optical_flow
     if old_points is not None:
         optical_flow = old_points - points
+        magnitudes, angles = cv.cartToPolar(optical_flow[..., 0], optical_flow[..., 1])
+        for i in range(len(optical_flow)):
+            for j in range(len(optical_flow[0])):
+                if magnitudes[i][j] > 50:
+                    optical_flow[i][j][0] = 0
+                    optical_flow[i][j][1] = 0
+
+    for point in grid.astype(int):
+        cv.circle(frame, tuple(point[0]), 1, (0, 0, 255), 1)
+
+    if optical_flow is not None:
+        for i, (p1, p2) in enumerate(zip(grid.astype(int), optical_flow.astype(int))):
+            if status[i]:
+                cv.arrowedLine(
+                    frame, tuple(p1[0]), tuple(p1[0] + p2[0]), (0, 255, 0), 2
+                )
 
     if optical_flow_old is not None:
-        print(f2(optical_flow_old, optical_flow))
+        print(
+            f2(
+                optical_flow_old.reshape((n, n, 2)),
+                optical_flow.reshape((n, n, 2)),
+            )
+        )
 
     # cv.imshow("frame", gray)
-    # if cv.waitKey(1) == ord("q"):
-    #     break
+    cv.imshow("Frame", cv.resize(frame, (640, 480)))
+    if cv.waitKey(1) == ord("q"):
+        break
 
 
 cap.release()
