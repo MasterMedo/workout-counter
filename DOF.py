@@ -20,6 +20,8 @@ frame_num_counter = 0
 while (cap.isOpened()):
     frame_num_counter += 1
     validno, okvir = cap.read()
+    cv.imshow("Kamera", okvir)
+
     if not validno:
         break
     sivi = cv.cvtColor(okvir, cv.COLOR_BGR2GRAY)
@@ -38,8 +40,14 @@ while (cap.isOpened()):
                 flow_grlice.append(flow)
 
             # Šalje se par flowova - zovi F2
-            #f2(flow_grlice)
-            print(flow_grlice[0][0])
+            print(len(flow_grlice))
+            #f2(flow_grlice[0], flow_grlice[1])
+    # Flowchart
+    magnitude, angle = cv.cartToPolar(flow[..., 0], flow[..., 1])
+    maska[..., 0] = angle * 180 / np.pi / 2
+    maska[..., 2] = cv.normalize(magnitude, None, 0, 255, cv.NORM_MINMAX)
+    rgb = cv.cvtColor(maska, cv.COLOR_HSV2BGR)
+    cv.imshow("DOF", rgb)
 
     # Kraj
     prosli_sivi = sivi
