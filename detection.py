@@ -2,9 +2,15 @@ import numpy as np
 import cv2 as cv
 from itertools import count
 
+from repetition_detector import f2
+
 
 cap = cv.VideoCapture(0)
 gray = cv.cvtColor(cap.read()[1], cv.COLOR_BGR2GRAY)
+old_points = None
+points = None
+old_optical_flow = None
+optical_flow = None
 
 h, w = cap.get(3), cap.get(4)
 grid = np.array(
@@ -22,6 +28,9 @@ for i in count():
 
     old_gray = gray
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+
+    old_points = points
+
     points, status, err = cv.calcOpticalFlowPyrLK(
         old_gray,
         gray,
@@ -31,6 +40,13 @@ for i in count():
         maxLevel=2,
         criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1.5),
     )
+
+    optical_flow_old = optical_flow
+    if old_points is not None:
+        optical_flow = old_points - points
+
+    if optical_flow_old is not None:
+        print(f2(optical_flow_old, optical_flow))
 
     # cv.imshow("frame", gray)
     # if cv.waitKey(1) == ord("q"):
