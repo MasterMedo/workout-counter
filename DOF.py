@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 
+from repetition_detector import f2
 
 REZOLUCIJA_SLANJA_F2 = 5    # Svakih koliko se šalje u F2
 cap = cv.VideoCapture(0)
@@ -41,7 +42,7 @@ while (cap.isOpened()):
 
             # Šalje se par flowova - zovi F2
             print(len(flow_grlice))
-            #f2(flow_grlice[0], flow_grlice[1])
+            f2(flow_grlice[0], flow_grlice[1])
     # Flowchart
     magnitude, angle = cv.cartToPolar(flow[..., 0], flow[..., 1])
     maska[..., 0] = angle * 180 / np.pi / 2

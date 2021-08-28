@@ -1,40 +1,46 @@
 import cv2
 import numpy as np
+import math
 
-currentCount = 0
-EPSILON = 1.3
-firstOF = None
-nulVector = None
-movStart = False
+current_count = 0
+div_average = None
+average_polar = []
+ALPHA = 0.99
+MAX_BUFFER_SIZE = 100
 
-def get_mag_diff(OF1, OF2):
-    x1 = OF2[..., 0] - OF1[..., 0]
-    y1 = OF2[..., 1] - OF1[..., 1]
+def get_mean_polar_coordinates(A):
+    X = np.average(A[..., 0])
+    Y = np.average(A[..., 1])
 
-    return cv2.cartToPolar(x1, y1)[0]
+    return (math.sqrt(Y**2 + X**2), math.atan2(Y, X))
 
 def f2(lastOF, curOF):
-    global currentCount, \
-           EPSILON, \
-           firstOF, \
-           nulVector, \
-           movStart
+    global div_average, \
+           current_count, \
+           average_polar, \
+           ALPHA, \
+           MAX_BUFFER_SIZE
 
-    if (firstOF is None):
-        firstOF = lastOF
-        nulVector = EPSILON * get_mag_diff(lastOF, curOF)
+    div = curOF - lastOF
+    print(curOF, lastOF)
+    print(div)
 
-    difference = get_mag_diff(lastOF, curOF)
+    if (div_average is None):
+        div_average = div
+    else:
+        div_average += ALPHA * div_average + (1 - ALPHA) * div
 
-    detection = ((difference <= nulVector).all() \
-                 and movStart)
+    mag, phi = get_mean_polar_coordinates(div_average)
 
-    movStart = (difference > nulVector).any()
+    average_polar.append((mag, phi))
+    if (len(average_polar) > MAX_BUFFER_SIZE):
+        average_polar = average_polar[1:]
+
+    print(average_polar[-5:])
+    detection = False
 
     # Mislav's code here:
     if (detection):
-        currentCount += 1
-        firstOF = None
-        movStart = False
+        current_count += 1
 
-    return currentCount
+    return (current_count // 2)
