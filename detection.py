@@ -8,7 +8,7 @@ while True:
     if not is_valid:
         break
 
-    # gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     cv.imshow("frame", gray)
     if cv.waitKey(1) == ord("q"):
         break
