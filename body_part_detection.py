@@ -1,3 +1,5 @@
+"""Used to find human poses in images.
+"""
 import os
 import numpy as np
 
@@ -39,7 +41,7 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     :param frame np.ndarray: Frame of the image.
     :param size int: Size of the square frame MoveNet detects body parts.
     :return: Returns 17 points containing coordinates [x, y, confidence]
-    :rtype: np.ndarray[np.ndarray[np.float32]]]]
+    :rtype: list[tuple[int, int, float]]
     """
     global movenet
 
@@ -49,4 +51,17 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     image = tf.cast(tf.image.resize_with_pad(image, size, size), dtype=tf.int32)
 
     # get the body parts positions and score
-    return movenet(image)["output_0"].numpy()[0][0]
+    keypoints = movenet(image)["output_0"].numpy()[0][0]
+
+    height, width, *_ = frame.shape
+    box_size = max(height, width)
+
+    # calculate the positions of body parts on the frame
+    return [
+        (
+            int(x * box_size - (box_size - width) / 2),
+            int(y * box_size - (box_size - height) / 2),
+            confidence,
+        )
+        for y, x, confidence in keypoints
+    ]

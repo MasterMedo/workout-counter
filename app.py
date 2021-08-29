@@ -14,15 +14,8 @@ if __name__ == "__main__":
             print("what")
             break
 
-        height, width, *_ = frame.shape
-        box_size = max(height, width)
-
-        for y, x, confidence in detect_body_parts(frame, 256):
+        for x, y, confidence in detect_body_parts(frame, 256):
             if confidence > 0.2:
-                # calculate the positions of body parts on the frame
-                x = int(x * box_size - (box_size - width) / 2)
-                y = int(y * box_size - (box_size - height) / 2)
-
                 # draw a point on each body part
                 cv.circle(frame, (x, y), 5, (0, 0, 255), -1)
 
