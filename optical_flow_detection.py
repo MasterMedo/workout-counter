@@ -31,9 +31,6 @@ for i in count():
     if not is_valid:
         break
 
-    if i % 5 != 0:
-        continue
-
     old_gray = gray
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
@@ -72,7 +69,7 @@ for i in count():
     if optical_flow_old is not None:
         print(
             f2(
-                optical_flow_old.reshape((n, n, 2)),
+                # optical_flow_old.reshape((n, n, 2)),
                 optical_flow.reshape((n, n, 2)),
             )
         )
