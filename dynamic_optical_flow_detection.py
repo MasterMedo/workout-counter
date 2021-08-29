@@ -3,7 +3,7 @@ import numpy as np
 
 from repetition_detector import f2
 
-REZOLUCIJA_SLANJA_F2 = 5    # Svakih koliko se šalje u F2
+REZOLUCIJA_SLANJA_F2 = 5  # Svakih koliko se šalje u F2
 cap = cv.VideoCapture(0)
 ret, prvi_okvir = cap.read()
 prosli_sivi = cv.cvtColor(prvi_okvir, cv.COLOR_BGR2GRAY)
@@ -18,7 +18,7 @@ flow_grlice = []
 
 frame_num_counter = 0
 # ZG petlja
-while (cap.isOpened()):
+while cap.isOpened():
     frame_num_counter += 1
     validno, okvir = cap.read()
     cv.imshow("Kamera", okvir)
@@ -26,9 +26,9 @@ while (cap.isOpened()):
     if not validno:
         break
     sivi = cv.cvtColor(okvir, cv.COLOR_BGR2GRAY)
-    flow = cv.calcOpticalFlowFarneback(prosli_sivi, sivi,
-                                       None,
-                                       0.5, 3, 15, 3, 5, 1.2, 0)
+    flow = cv.calcOpticalFlowFarneback(
+        prosli_sivi, sivi, None, 0.5, 3, 15, 3, 5, 1.2, 0
+    )
     # Za F2
     if frame_num_counter == 1:
         flow_grlice.append(flow)
@@ -52,7 +52,7 @@ while (cap.isOpened()):
 
     # Kraj
     prosli_sivi = sivi
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    if cv.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()
