@@ -11,13 +11,19 @@ if __name__ == "__main__":
     while cv.waitKey(1) != ord("q"):
         is_valid, frame = cap.read()
         if not is_valid:
-            print("what")
             break
 
-        for x, y, confidence in detect_body_parts(frame, 256):
+        body_parts = detect_body_parts(frame, 256)
+        for x, y, confidence in body_parts:
             if confidence > 0.2:
                 # draw a point on each body part
-                cv.circle(frame, (x, y), 5, (0, 0, 255), -1)
+                cv.circle(
+                    img=frame,
+                    center=(x, y),
+                    radius=5,
+                    color=(0, 0, 255),
+                    thickness=-1,
+                )
 
         # show the frame in a window
         cv.imshow("Pose detection", frame)

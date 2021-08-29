@@ -2,31 +2,38 @@
 """
 import os
 import numpy as np
+from enum import IntEnum
 
 # ignore warnings and information messages
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf  # noqa E402
 
 
-body_parts = {
-    "nose": 0,
-    "left_eye": 1,
-    "right_eye": 2,
-    "left_ear": 3,
-    "right_ear": 4,
-    "left_shoulder": 5,
-    "right_shoulder": 6,
-    "left_elbow": 7,
-    "right_elbow": 8,
-    "left_wrist": 9,
-    "right_wrist": 10,
-    "left_hip": 11,
-    "right_hip": 12,
-    "left_knee": 13,
-    "right_knee": 14,
-    "left_ankle": 15,
-    "right_ankle": 16,
-}
+class BodyPart(IntEnum):
+    """Access body parts returned by the detect_body_parts function.
+
+    Example usage:
+        body_parts = detect_body_parts(frame, 256)
+        print(body_parts[BodyPart.RIGHT_SHOULDER])
+    """
+
+    NOSE = 0
+    LEFT_EYE = 1
+    RIGHT_EYE = 2
+    LEFT_EAR = 3
+    RIGHT_EAR = 4
+    LEFT_SHOULDER = 5
+    RIGHT_SHOULDER = 6
+    LEFT_ELBOW = 7
+    RIGHT_ELBOW = 8
+    LEFT_WRIST = 9
+    RIGHT_WRIST = 10
+    LEFT_HIP = 11
+    RIGHT_HIP = 12
+    LEFT_KNEE = 13
+    RIGHT_KNEE = 14
+    LEFT_ANKLE = 15
+    RIGHT_ANKLE = 16
 
 
 # load the MoveNet model
