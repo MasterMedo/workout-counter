@@ -48,20 +48,24 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     :param frame np.ndarray: Frame of the image.
     :param size int: Size of the square frame MoveNet detects body parts.
     :return: Returns 17 points containing coordinates [x, y, confidence]
+        x - integer pixel coordinates on the original frame
+        y - integer pixel coordinates on the original frame
+        confidence - float from 0 to 1 indicating the probability of detection
     :rtype: list[tuple[int, int, float]]
     """
     global movenet
 
     # format the video frame to a square tensor required by MoveNet
     image = tf.convert_to_tensor(frame)
-    image = tf.expand_dims(image, axis=0)
     image = tf.image.resize_with_pad(image, size, size)
+    image = tf.expand_dims(image, axis=0)
     image = tf.cast(image, dtype=tf.int32)
 
     # get the body parts positions and score
     keypoints = movenet(image)["output_0"]
     keypoints = keypoints.numpy().squeeze()
 
+    return keypoints
     # calculate the positions of body parts on the original frame
     height, width, *_ = frame.shape
     box_size = max(height, width)
