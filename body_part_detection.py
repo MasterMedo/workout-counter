@@ -9,6 +9,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf  # noqa E402
 
 
+# load the MoveNet model
+model = tf.saved_model.load("./movenet_model")
+movenet = model.signatures["serving_default"]
+
+
 class BodyPart(IntEnum):
     """Access body parts returned by the detect_body_parts function.
 
@@ -36,11 +41,6 @@ class BodyPart(IntEnum):
     RIGHT_ANKLE = 16
 
 
-# load the MoveNet model
-model = tf.saved_model.load("./movenet_model")
-movenet = model.signatures["serving_default"]
-
-
 def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     """Takes the image in form of a numpy array, detects the positions
     and confidence of body parts and returns them in a numpy array.
@@ -52,18 +52,19 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     """
     global movenet
 
-    # format the video frame to a square
+    # format the video frame to a square tensor required by MoveNet
     image = tf.convert_to_tensor(frame)
     image = tf.expand_dims(image, axis=0)
-    image = tf.cast(tf.image.resize_with_pad(image, size, size), dtype=tf.int32)
+    image = tf.image.resize_with_pad(image, size, size)
+    image = tf.cast(image, dtype=tf.int32)
 
     # get the body parts positions and score
-    keypoints = movenet(image)["output_0"].numpy()[0][0]
+    keypoints = movenet(image)["output_0"]
+    keypoints = keypoints.numpy().squeeze()
 
+    # calculate the positions of body parts on the original frame
     height, width, *_ = frame.shape
     box_size = max(height, width)
-
-    # calculate the positions of body parts on the frame
     return [
         (
             int(x * box_size - (box_size - width) / 2),
