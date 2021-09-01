@@ -5,8 +5,9 @@ from itertools import count
 from body_part_detection import detect_body_parts
 
 
-# if __name__ == "__main__":
-for workout in os.listdir("./workout_videos/"):
+# for workout in os.listdir("./workout_videos/"):
+workout = "dumbbell-bicep-curl.MOV"
+if __name__ == "__main__":
     F = []
     X = [[] for _ in range(17)]
     Y = [[] for _ in range(17)]
@@ -21,30 +22,30 @@ for workout in os.listdir("./workout_videos/"):
         if not is_valid or cv.waitKey(1) == ord("q"):
             break
 
-        F.append(i)
+        # F.append(i)
         body_parts = detect_body_parts(frame, 256)
-        for j, (x, y, confidence) in enumerate(body_parts):
-            X[j].append(x)
-            Y[j].append(y)
-            C[j].append(confidence)
+        # for j, (x, y, confidence) in enumerate(body_parts):
+        #     X[j].append(x)
+        #     Y[j].append(y)
+        #     C[j].append(confidence)
 
-        # for x, y, confidence in body_parts:
-        #     if confidence > 0.3:
-        #         draw a point on each body part
-        #         cv.circle(
-        #             img=frame,
-        #             center=(x, y),
-        #             radius=5,
-        #             color=(0, 0, 255),
-        #             thickness=-1,
-        #         )
+        for x, y, confidence in body_parts:
+            if confidence > 0.3:
+                # draw a point on each body part
+                cv.circle(
+                    img=frame,
+                    center=(x, y),
+                    radius=5,
+                    color=(0, 0, 255),
+                    thickness=-1,
+                )
 
         # show the frame in a window
-        # cv.imshow("Pose detection", frame)
+        cv.imshow("Pose detection", frame)
 
     # release the memory
     cap.release()
     cv.destroyAllWindows()
 
-    with open(f"./workout_data/{workout[:-4]}.py", "w") as f:
-        print([F, X, Y, C], file=f)
+    # with open(f"./workout_data/{workout[:-4]}.py", "w") as f:
+    #     print([F, X, Y, C], file=f)

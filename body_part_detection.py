@@ -65,7 +65,7 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
     keypoints = movenet(image)["output_0"]
     keypoints = keypoints.numpy().squeeze()
 
-    return keypoints
+    # return keypoints
     # calculate the positions of body parts on the original frame
     height, width, *_ = frame.shape
     box_size = max(height, width)
