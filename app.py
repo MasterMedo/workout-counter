@@ -2,6 +2,7 @@ import os
 import cv2 as cv
 
 from itertools import count
+from pixel_meter_ratio import pixel_meter_ratio as pmr
 from body_part_detection import detect_body_parts
 
 
@@ -41,7 +42,8 @@ if __name__ == "__main__":
                 )
 
         # show the frame in a window
-        cv.imshow("Pose detection", frame)
+        # cv.imshow("Pose detection", frame)
+        print(pmr(body_parts))
 
     # release the memory
     cap.release()
