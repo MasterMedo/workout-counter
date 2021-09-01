@@ -9,10 +9,6 @@ from body_part_detection import detect_body_parts
 # for workout in os.listdir("./workout_videos/"):
 workout = "dumbbell-bicep-curl.MOV"
 if __name__ == "__main__":
-    F = []
-    X = [[] for _ in range(17)]
-    Y = [[] for _ in range(17)]
-    C = [[] for _ in range(17)]
 
     # read the video from the camera
     cap = cv.VideoCapture(f"./workout_videos/{workout}")
@@ -48,6 +44,3 @@ if __name__ == "__main__":
     # release the memory
     cap.release()
     cv.destroyAllWindows()
-
-    # with open(f"./workout_data/{workout[:-4]}.py", "w") as f:
-    #     print([F, X, Y, C], file=f)
