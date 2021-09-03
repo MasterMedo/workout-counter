@@ -11,7 +11,7 @@ workout = "dumbbell-bicep-curl.MOV"
 if __name__ == "__main__":
 
     # read the video from the camera
-    cap = cv.VideoCapture(f"./workout_videos/{workout}")
+    cap = cv.VideoCapture(0)
 
     # press 'q' to exit the video
     for i in count():
@@ -38,7 +38,7 @@ if __name__ == "__main__":
                 )
 
         # show the frame in a window
-        # cv.imshow("Pose detection", frame)
+        cv.imshow("Pose detection", frame)
         print(pmr(body_parts))
 
     # release the memory

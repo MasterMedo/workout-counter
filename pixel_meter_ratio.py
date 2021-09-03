@@ -7,7 +7,7 @@ import numpy as np
 from numpy import mean as midpoint
 from body_part_detection import BodyPart
 
-minimal_confidence = 0.4
+minimal_confidence = 0.3
 
 
 @cache
@@ -41,10 +41,14 @@ def pixel_meter_ratio(body_part_positions, person_height=1.75):
         )
 
     def abdomen_thorax_length(shoulder_midpoint, hip_midpoint):
+        if min(shoulder_midpoint[-1], hip_midpoint[-1]) < minimal_confidence:
+            return 0, 0
+
         thorax_and_abdomen = distance(
             shoulder_midpoint,
             hip_midpoint,
         )
+        print(thorax_and_abdomen)
         thorax = get_segment_length("thorax")
         abdomen = get_segment_length("abdomen")
         return (
@@ -84,4 +88,5 @@ def pixel_meter_ratio(body_part_positions, person_height=1.75):
         bi_iliac / get_segment_length("bi-iliac"),
     ]
 
-    return person_height / max(pixel_heights)
+    m = max(pixel_heights)
+    return person_height / m if m > 0 else 0
