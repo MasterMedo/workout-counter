@@ -1,13 +1,11 @@
 import csv
-import math
 
 from functools import cache
-from scipy.spatial.distance import euclidean as distance
-import numpy as np
 from numpy import mean as midpoint
-from body_part_detection import BodyPart
+from scipy.spatial.distance import euclidean
 
-minimal_confidence = 0.3
+from body_part_detection import BodyPart
+from constants import MINIMAL_CONFIDENCE
 
 
 @cache
@@ -22,8 +20,6 @@ def get_segment_length(segment_name):
 
 
 def pixel_meter_ratio(body_part_positions, person_height=1.75):
-    global minimal_confidence
-
     def body_part_midpoint(a, b):
         a = body_part_positions[a]
         b = body_part_positions[b]
@@ -32,28 +28,30 @@ def pixel_meter_ratio(body_part_positions, person_height=1.75):
     def body_part_distance(a, b):
         a = body_part_positions[a]
         b = body_part_positions[b]
-        if min(a[-1], b[-1]) < minimal_confidence:
+        if min(a[-1], b[-1]) < MINIMAL_CONFIDENCE:
             return 0
 
-        return distance(
+        return euclidean(
             a[:-1],
             b[:-1],
         )
 
     def abdomen_thorax_length(shoulder_midpoint, hip_midpoint):
-        if min(shoulder_midpoint[-1], hip_midpoint[-1]) < minimal_confidence:
-            return 0, 0
+        if min(shoulder_midpoint[-1], hip_midpoint[-1]) < MINIMAL_CONFIDENCE:
+            return 0, 0, 0
 
-        thorax_and_abdomen = distance(
+        length = euclidean(
             shoulder_midpoint,
             hip_midpoint,
         )
-        print(thorax_and_abdomen)
         thorax = get_segment_length("thorax")
         abdomen = get_segment_length("abdomen")
+        pelvis = get_segment_length("pelvis")
+        together = thorax + abdomen + pelvis
         return (
-            thorax_and_abdomen / (thorax / abdomen + 1),
-            thorax_and_abdomen - abdomen,
+            length * (thorax / together),
+            length * (abdomen / together),
+            length * (pelvis / together),
         )
 
     upper_arm_left = body_part_distance(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW)
@@ -71,7 +69,10 @@ def pixel_meter_ratio(body_part_positions, person_height=1.75):
         BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER
     )
     hip_midpoint = body_part_midpoint(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP)
-    abdomen, thorax = abdomen_thorax_length(shoulder_midpoint, hip_midpoint)
+    thorax, abdomen, pelvis = abdomen_thorax_length(
+        shoulder_midpoint,
+        hip_midpoint,
+    )
 
     pixel_heights = [
         upper_arm_left / get_segment_length("upper-arm"),
@@ -82,11 +83,12 @@ def pixel_meter_ratio(body_part_positions, person_height=1.75):
         thigh_right / get_segment_length("thigh"),
         leg_left / get_segment_length("leg"),
         leg_right / get_segment_length("leg"),
-        abdomen / get_segment_length("abdomen"),
         thorax / get_segment_length("thorax"),
+        abdomen / get_segment_length("abdomen"),
+        pelvis / get_segment_length("pelvis"),
         biacromial / get_segment_length("biacromial"),
         bi_iliac / get_segment_length("bi-iliac"),
     ]
 
     m = max(pixel_heights)
-    return person_height / m if m > 0 else 0
+    return person_height / max(pixel_heights) if m > 0 else 0
