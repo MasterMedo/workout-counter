@@ -10,24 +10,30 @@ from scipy.ndimage.filters import uniform_filter1d
 
 from body_part_detection import BodyPart
 from pixel_meter_ratio import pixel_meter_ratio as pmr
+from constants import DEFAULT_FPS as DEFAULT_FPS
 
 
 def get_derivation(X):
     return abs(np.array(X)[:-1] - np.array(X)[1:])
 
 
-def smoothen(X, window_length=51, polyorder=3):
+def smoothen(X, fps=DEFAULT_FPS, polyorder=3):
+    window_length = (fps // 6) * 2 + 1
     if window_length >= len(X):
         return np.array([])
 
     return savgol_filter(X, window_length, polyorder)
 
 
-def smoothen2(X, N=60):
-    return uniform_filter1d(X, size=N)
+def smoothen2(X, fps=DEFAULT_FPS):
+    size = fps // 3
+    return uniform_filter1d(X, size=size)
 
 
+# if __name__ == "__main__":
 for workout in os.listdir("./workout_data/"):
+    # workout = "single-arm-dumbbell-triceps-extension.py"
+    # workout = "dumbbell-bicep-curl.py"
     workout = workout[:-3]
     print(workout)
 
@@ -44,6 +50,7 @@ for workout in os.listdir("./workout_data/"):
     F = list(range(len(X[0])))
 
     for body_part in map(BodyPart, range(17)):
+        # body_part = BodyPart.LEFT_WRIST
         x = X[body_part]
         y = Y[body_part]
         x_smooth = smoothen(x)
@@ -78,3 +85,4 @@ for workout in os.listdir("./workout_data/"):
         # plt.ylabel("coordinate position")
         # plt.legend()
         # plt.show()
+        # exit()
