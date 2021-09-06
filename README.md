@@ -4,19 +4,6 @@ Counting reps in the gym/home.
 ## idea
 The goal of this project is to create an application that will be able to count exercise repetitions while recording a person during a workout.
 
-## realisation ideas
-- [x] detect_body_parts(frame) -> body_part_positions
-- [ ] trim_video_to_exercise(body_part_positions) -> start, end
-- [ ] classify the exercise(body_part_positions) -> exercise
-- [ ] detect_relevant_body_part(body_part_positions) -> body_part
-- [ ] detect_repetition(body_part) -> number_of_repetitions
-  - [x] smoothen(X) -> X
-  - [x] find_peaks(X) -> peaksX
-  - [x] peak_prominences(X) -> prominencesX
-  - [ ] epsilon = minimum movement amount relative to body_part length
-  - [x] count(peaksX, prominencesX, epsilon) -> number_of_repetitions
-- [ ] create an iterative approach
-
 ## detecting human positions
 The MoveNet neural network is used to detect body parts in workouts.
 
@@ -30,3 +17,11 @@ The MoveNet neural network is used to detect body parts in workouts.
 
 ## detecting peaks and valleys iteratively
 ![bicep curls count](./img/bicep_curls_peaks_and_valleys.png)
+
+## how to run
+1. install python
+2. install pip
+3. install requirements `pip install -r requirements.txt`
+4. (optional) find some pre-recorded videos
+5. edit `app.py` (bottom of the file) to choose input (first argument of main) -- `0` means camera input, or give path to the video file you want to analyse
+6. run the app with `python3 app.py`
