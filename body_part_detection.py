@@ -53,8 +53,6 @@ def detect_body_parts(frame: np.ndarray, size: int = 256) -> np.ndarray:
         confidence - float from 0 to 1 indicating the probability of detection
     :rtype: list[tuple[int, int, float]]
     """
-    global movenet
-
     # format the video frame to a square tensor required by MoveNet
     image = tf.convert_to_tensor(frame)
     image = tf.image.resize_with_pad(image, size, size)
