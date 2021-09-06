@@ -27,3 +27,6 @@ The MoveNet neural network is used to detect body parts in workouts.
 ![situps](./img/situps.png)
 ![bicep curls](./img/bicep_curls.png)
 ![tricep extensions](./img/tricep_extensions.png)
+
+## detecting peaks and valleys iteratively
+![bicep curls count](./img/bicep_curls_peaks_and_valleys.png)
