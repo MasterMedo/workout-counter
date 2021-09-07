@@ -12,11 +12,12 @@ from constants import MINIMAL_CONFIDENCE, MOVENET_PIXEL_SIZE
 
 
 alpha = 0.6
-looking_for = None
+pmr_alpha = 0.99
+body_part_to_track = BodyPart.RIGHT_ELBOW
 
 
 def main(input_path: str, output_path: str) -> None:
-    global peak_history, valley_history
+    global peaks, valleys, looking_for
     # read the video from the camera
     cap = cv.VideoCapture(input_path)
 
@@ -27,21 +28,23 @@ def main(input_path: str, output_path: str) -> None:
     # peak = [body_parts_smooth[i][:2] for i in range(17)]
     # valley = [body_parts_smooth[i][:2] for i in range(17)]
     # workout_count = [[0, 0] for _ in range(17)]
+    ratio_history = [ratio]
 
-    peak_history = [
+    peaks = [
         [
-            [[0, body_parts_smooth[i][0]]],
-            [[0, body_parts_smooth[i][1]]],
+            [(0, body_parts_smooth[i][0])],
+            [(0, body_parts_smooth[i][1])],
         ]
         for i in range(17)
     ]
-    valley_history = [
+    valleys = [
         [
-            [[0, body_parts_smooth[i][0]]],
-            [[0, body_parts_smooth[i][1]]],
+            [(0, body_parts_smooth[i][0])],
+            [(0, body_parts_smooth[i][1])],
         ]
         for i in range(17)
     ]
+    looking_for = [["valley"] * 2 for i in range(17)]
     F = []
     Y = []
     Y_s = []
@@ -55,9 +58,10 @@ def main(input_path: str, output_path: str) -> None:
         # save(output_path, body_parts)
         # draw_screen(frame, body_parts)
 
-        ratio = ratio * alpha + (1 - alpha) * pmr(body_parts)
+        ratio = ratio * pmr_alpha + (1 - pmr_alpha) * pmr(body_parts)
         if ratio <= 0:  # no body parts could be detected
             continue
+        ratio_history.append(1 / 4 / ratio)
 
         minimal_prominence = 1 / 4 / ratio  # 1/4 meters
         maximal_movement = 1 / 8 / ratio  # 1/8 meters
@@ -75,7 +79,7 @@ def main(input_path: str, output_path: str) -> None:
             x_, y_, c_ = body_parts[body_part]
             x, y, c = body_parts_smooth[body_part]
 
-            if body_part == 9:
+            if body_part == body_part_to_track:
                 F.append(i)
                 Y.append(y_)
                 Y_s.append(y)
@@ -83,9 +87,8 @@ def main(input_path: str, output_path: str) -> None:
             # don't count joints with small confidence
 
             x, y, c = body_parts_smooth[body_part]
-            if c > MINIMAL_CONFIDENCE:
-                find_peaks_and_valleys(x, minimal_prominence, body_part, i, 0)
-                find_peaks_and_valleys(y, minimal_prominence, body_part, i, 1)
+            find_peaks_and_valleys(x, minimal_prominence, body_part, i, 0)
+            find_peaks_and_valleys(y, minimal_prominence, body_part, i, 1)
 
     # release the memory
     cap.release()
@@ -93,12 +96,11 @@ def main(input_path: str, output_path: str) -> None:
 
     # plt.plot(F, Y, label="position")
     plt.plot(F, Y_s, label="smooth position")
-    if peak_history:
-        a, b = list(zip(*peak_history[9][1]))
-        plt.scatter(a, b, label="peaks")
-    if valley_history:
-        a, b = list(zip(*valley_history[9][1]))
-        plt.scatter(a, b, label="valleys")
+    a, b = list(zip(*peaks[body_part_to_track][1]))
+    plt.scatter(a, b, label="peaks")
+    a, b = list(zip(*valleys[body_part_to_track][1]))
+    plt.scatter(a, b, label="valleys")
+    # plt.plot(list(range(len(ratio_history))), ratio_history, label="ratio")
     plt.xlabel("frame number")
     plt.ylabel("pixel number (position)")
     plt.legend()
@@ -175,31 +177,24 @@ def find_peaks_and_valleys(
     i,
     xy,
 ):
-    global peak_history, valley_history, looking_for
-    p, last_peak = peak_history[body_part][xy][-1]
-    v, last_valley = valley_history[body_part][xy][-1]
-    if looking_for == "peak":
+    global peaks, valleys, looking_for
+    last_peak_index, last_peak = peaks[body_part][xy][-1]
+    last_valley_index, last_valley = valleys[body_part][xy][-1]
+    if looking_for[body_part][xy] == "peak":
         if value < last_valley:
-            valley_history[body_part][xy][-1] = [i, value]
-        if value > last_valley + minimal_prominence:
-            peak_history[body_part][xy].append([i, value])
-            looking_for = "valley"
-    elif looking_for == "valley":
+            valleys[body_part][xy][-1] = (i, value)
+        elif value > last_valley + minimal_prominence:
+            peaks[body_part][xy].append((i, value))
+            looking_for[body_part][xy] = "valley"
+    elif looking_for[body_part][xy] == "valley":
         if value > last_peak:
-            peak_history[body_part][xy][-1] = [i, value]
-        if value < last_peak - minimal_prominence:
-            valley_history[body_part][xy].append([i, value])
-            looking_for = "peak"
-    else:
-        if value > last_peak:
-            p, last_peak = peak_history[body_part][xy][-1] = [i, value]
-        if value < last_valley:
-            v, last_valley = valley_history[body_part][xy][-1] = [i, value]
-        if last_peak - last_valley > minimal_prominence:
-            looking_for = "peak" if v > p else "valley"
+            peaks[body_part][xy][-1] = (i, value)
+        elif value < last_peak - minimal_prominence:
+            valleys[body_part][xy].append((i, value))
+            looking_for[body_part][xy] = "peak"
 
 
 if __name__ == "__main__":
     # for workout in os.listdir("./workout_videos/"):
-    workout = "dumbbell-bicep-curl"
+    workout = "3_4-sit-up"
     main(f"../workout_videos/{workout}.MOV", f"./workout_data/{workout}.py")
