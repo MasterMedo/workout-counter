@@ -196,5 +196,9 @@ def find_peaks_and_valleys(
 
 if __name__ == "__main__":
     # for workout in os.listdir("./workout_videos/"):
+    base_directory = os.path.dirname(__file__)
     workout = "3_4-sit-up"
-    main(f"../workout_videos/{workout}.MOV", f"./workout_data/{workout}.py")
+    main(
+        base_directory + f"/workout_videos/{workout}.MOV",
+        base_directory + f"/workout_data/{workout}.py",
+    )
