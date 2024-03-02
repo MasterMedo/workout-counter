@@ -13,16 +13,23 @@ from constants import MINIMAL_CONFIDENCE, MOVENET_PIXEL_SIZE
 
 alpha = 0.6
 pmr_alpha = 0.99
-body_part_to_track = BodyPart.RIGHT_ELBOW
+body_part_to_track = BodyPart.RIGHT_WRIST
 
 
 def main(input_path: str, output_path: str) -> None:
     global peaks, valleys, looking_for
-    # read the video from the camera
-    cap = cv.VideoCapture(input_path)
+    camera = input_path == 0
+    # read the video from the file/camera
+    cap = cv.VideoCapture(input_path, cv.CAP_AVFOUNDATION)
 
     # press 'q' to exit the video
-    _, frame = cap.read()
+    success, frame = cap.read()
+    if not success:
+        if input_path == 0:
+            print("There's a problem with the camera, no feed detected.")
+        else:
+            print("There's a problem with the input file, no video detected.")
+        exit()
     body_parts_smooth = detect_body_parts(frame, MOVENET_PIXEL_SIZE)
     ratio = pmr(body_parts_smooth)
     # peak = [body_parts_smooth[i][:2] for i in range(17)]
@@ -56,7 +63,8 @@ def main(input_path: str, output_path: str) -> None:
 
         body_parts = detect_body_parts(frame, MOVENET_PIXEL_SIZE)
         # save(output_path, body_parts)
-        # draw_screen(frame, body_parts)
+        if camera:
+            draw_screen(frame, body_parts)
 
         ratio = ratio * pmr_alpha + (1 - pmr_alpha) * pmr(body_parts)
         if ratio <= 0:  # no body parts could be detected
@@ -108,11 +116,11 @@ def main(input_path: str, output_path: str) -> None:
 
 
 def draw_screen(frame: np.array, body_parts):
-    ratio = pmr(body_parts)
+    ratio = pmr(body_parts) or 1
     cv.line(
         img=frame,
         pt1=(1, 0),
-        pt2=(1, 1 // ratio),
+        pt2=(1, int(1 // ratio)),
         color=(0, 0, 255),
         thickness=3,
     )
@@ -199,6 +207,7 @@ if __name__ == "__main__":
     base_directory = os.path.dirname(__file__)
     workout = "3_4-sit-up"
     main(
-        base_directory + f"/workout_videos/{workout}.MOV",
+        # base_directory + f"/workout_videos/{workout}.MOV",
+        0,  # 0 means camera input
         base_directory + f"/workout_data/{workout}.py",
     )
